@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Poker</string>
+    <string name="click_for_select_card">Click for select card</string>
+
+    <string-array name="Suit">
+        <item>C</item>
+        <item>D</item>
+        <item>H</item>
+        <item>S</item>
+    </string-array>
 </resources>
