@@ -7,6 +7,7 @@ public class CardDetail {
     private String value;
     private String suit;
     private String scoreOfValue;
+    private String name;
 
     public CardDetail() {
     }
@@ -14,9 +15,10 @@ public class CardDetail {
     public CardDetail(String mValue, String mSuit ) {
         this.value = mValue;
         this.suit = mSuit;
-        this.scoreOfValue = setScoreofVAlue(mValue);
+        this.scoreOfValue = initScoreOfValue(mValue);
+        this.name = setNameCard(mValue);
     }
-    private String setScoreofVAlue(String _value){
+    private String initScoreOfValue(String _value){
         String score;
         switch (_value){
             case "1":score="01"; break;
@@ -37,7 +39,18 @@ public class CardDetail {
         }
         return  score;
     }
-
+    private String setNameCard(String _value){
+        String score;
+        switch (_value){
+            case "T":score="10"; break;
+            case "J":score="Jack"; break;
+            case "Q":score="Queen"; break;
+            case "K":score="King"; break;
+            case "A":score="Ace"; break;
+            default:score =_value;
+        }
+        return  score;
+    }
 
     public String getSuit() {
         return suit;
@@ -62,5 +75,13 @@ public class CardDetail {
 
     public void setScoreOfValue(String scoreOfValue) {
         this.scoreOfValue = scoreOfValue;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

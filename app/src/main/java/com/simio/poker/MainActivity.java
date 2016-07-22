@@ -1,6 +1,7 @@
 package com.simio.poker;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -10,8 +11,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.aigestudio.wheelpicker.WheelPicker;
+import com.simio.poker.manager.CheckWinner;
 import com.simio.poker.model.CardDetail;
-import com.simio.poker.manager.ProcessCard;
+import com.simio.poker.manager.CheckRuleCard;
 import com.simio.poker.model.UserName;
 
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         listCardSomchai = new ArrayList<>();
         listCardSomsak = new ArrayList<>();
         mlistAllCard = new ArrayList<>();
-        mlistAllCard.addAll(setmcard(mlistAllCard));
+        mlistAllCard = new ArrayList<>(setmcard(mlistAllCard));
     }
 
 
@@ -123,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private ArrayList<String> setmcard(ArrayList<String> _listcard) {
-        for (int i = 1; i < 15; i++) {
+        for (int i = 2; i < 15; i++) {
             if (i == 10) {
                 _listcard.add("TC");
                 _listcard.add("TD");
@@ -162,19 +164,188 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void onOK(View view) {
-        if (listCardSomchai.size() == 5 ) {
-           boolean straight_flush= ProcessCard.getInstance().isStraightFlush(listCardSomchai);
-//            boolean four = new ProcessCard().isFour(listCardSomchai);
-//            boolean full_house = new ProcessCard().isFour(listCardSomchai);
-//            boolean flush = new ProcessCard().isFlush(listCardSomchai);
-//            boolean straight = new ProcessCard().isStraight(listCardSomchai);
-//            boolean three = new ProcessCard().isThree(listCardSomchai);
-//            boolean two_pairs = new ProcessCard().isTwoPairs(listCardSomchai);
-//            boolean pair = ProcessCard.getInstance().isPair(listCardSomchai);
-            Toast.makeText(this, "CARD SUCCESS \n listCardSomchai is straight_flush :" + straight_flush, Toast.LENGTH_SHORT).show();
+        if (listCardSomchai.size() == 5 && listCardSomsak.size() ==5) {
+            String cardSomchai = setCard(listCardSomchai, "Somchai");
+            String cardSomsak = setCard(listCardSomsak, "Somsak");
+            String result = resultCard(listCardSomchai,listCardSomsak);
+            Intent intent = new Intent(MainActivity.this,SuccessActivity.class);
+            intent.putExtra("CARD_SOMCHAI",cardSomchai);
+            intent.putExtra("CARD_SOMSAK",cardSomsak);
+            intent.putExtra("RESULT",result);
+            startActivity(intent);
         } else {
             Toast.makeText(this, "CARD FAIL", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private String resultCard(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak){
+        String result;
+        if (userWinStraightFlush(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinStraightFlush(_listcardSomchai,_listcardSomsak);
+        }else if (userWinFour(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinFour(_listcardSomchai,_listcardSomsak);
+        }else if (userWinFullHouse(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinFullHouse(_listcardSomchai,_listcardSomsak);
+        }else if (userWinFlush(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinFlush(_listcardSomchai,_listcardSomsak);
+        }else if (userWinStraight(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinStraight(_listcardSomchai,_listcardSomsak);
+        }else if (userWinThree(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinThree(_listcardSomchai,_listcardSomsak);
+        }else if (userWinTwoPairs(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinTwoPairs(_listcardSomchai,_listcardSomsak);
+        }else if (userWinPair(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinPair(_listcardSomchai,_listcardSomsak);
+        }else if (userWinHighCard(_listcardSomchai,_listcardSomsak)!=(null)){
+            result = userWinHighCard(_listcardSomchai,_listcardSomsak);
+        }else{
+            result = null;
+        }
+        return result;
+    }
+
+    private String userWinStraightFlush(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinStraightFlush = CheckWinner.getInstance().userStraightFlush(_listcardSomchai, _listcardSomsak);
+        if (userWinStraightFlush == UserName.BOTH) {
+            result = "Tie";
+        } else if (userWinStraightFlush == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with StraightFlush";
+        } else if (userWinStraightFlush == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with StraightFlush";
+
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
+    private String userWinFour(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinFour = CheckWinner.getInstance().userFour(_listcardSomchai, _listcardSomsak);
+        if (userWinFour == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with Four";
+        } else if (userWinFour == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with Four";
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
+    private String userWinFullHouse(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinFullHouse = CheckWinner.getInstance().userFullHouse(_listcardSomchai, _listcardSomsak);
+        if (userWinFullHouse == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with FullHouse";
+        } else if (userWinFullHouse == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with FullHouse";
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
+    private String userWinFlush(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinFlush = CheckWinner.getInstance().userFlush(_listcardSomchai, _listcardSomsak);
+        if (userWinFlush == UserName.BOTH) {
+            result = "Tie";
+        } else if (userWinFlush == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with Flush ";
+        } else if (userWinFlush == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with Flush ";
+
+        } else {
+            result = null;
+        }
+        return result;
+    }
+    private String userWinStraight(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinStraight = CheckWinner.getInstance().userStraight(_listcardSomchai, _listcardSomsak);
+        if (userWinStraight == UserName.BOTH) {
+            result = "Tie";
+        } else if (userWinStraight == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with Straight ";
+        } else if (userWinStraight == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with Straight ";
+
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
+    private String userWinThree(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinThree = CheckWinner.getInstance().userThree(_listcardSomchai, _listcardSomsak);
+        if (userWinThree == UserName.BOTH) {
+            result = "Tie";
+        } else if (userWinThree == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with Three ";
+        } else if (userWinThree == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with Three ";
+
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
+    private String userWinTwoPairs(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinTwoPairs = CheckWinner.getInstance().userTwoPairs(_listcardSomchai, _listcardSomsak);
+        if (userWinTwoPairs == UserName.BOTH) {
+            result = "Tie";
+        } else if (userWinTwoPairs == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with TwoPairs ";
+        } else if (userWinTwoPairs == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with TwoPairs ";
+
+        } else {
+            result = null;
+        }
+        return result;
+    }
+    private String userWinPair(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinPair = CheckWinner.getInstance().userPair(_listcardSomchai, _listcardSomsak);
+        if (userWinPair == UserName.BOTH) {
+            result = "Tie";
+        } else if (userWinPair == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with Pair ";
+        } else if (userWinPair == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with Pair ";
+
+        } else {
+            result = null;
+        }
+        return result;
+    }
+
+    private String userWinHighCard(ArrayList<CardDetail> _listcardSomchai, ArrayList<CardDetail> _listcardSomsak) {
+        String result ;
+        UserName userWinHighCard = CheckWinner.getInstance().userHighCard(_listcardSomchai, _listcardSomsak);
+        if (userWinHighCard == UserName.BOTH) {
+            result = "Tie";
+        } else if (userWinHighCard == UserName.SOMCHAI) {
+            result = "SOMCHAI wins. - with HighCard "+CheckWinner.getInstance().getHighCard(_listcardSomchai, _listcardSomsak).getName() ;
+        } else if (userWinHighCard == UserName.SOMSAK) {
+            result = "SOMSAK wins. - with HighCard "+CheckWinner.getInstance().getHighCard(_listcardSomchai, _listcardSomsak).getName();
+
+        } else {
+            result = null;
+        }
+        return result;
+    }
+    private String setCard(ArrayList<CardDetail> _listcard, String _name) {
+        CheckRuleCard.getInstance().sortCard(_listcard);
+        String card = _name + " : ";
+        for (CardDetail carddetail : _listcard) {
+            card = card + " " + carddetail.getValue() + carddetail.getSuit();
+        }
+        return card;
     }
 
 
